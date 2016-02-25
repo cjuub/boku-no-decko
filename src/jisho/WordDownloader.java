@@ -13,7 +13,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 public class WordDownloader {
-//	private static final int RESULTS_PER_PAGE = 20;
 	private static final String BASE_API_URL =  "http://jisho.org/api/v1/search/words?";
 	
 	private ArrayList<Word> wordList;
