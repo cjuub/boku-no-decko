@@ -13,7 +13,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 public class WordDownloader {
-	private static final int RESULTS_PER_PAGE = 20;
+//	private static final int RESULTS_PER_PAGE = 20;
 	private static final String BASE_API_URL =  "http://jisho.org/api/v1/search/words?";
 	
 	private ArrayList<Word> wordList;
@@ -26,20 +26,22 @@ public class WordDownloader {
 		String query = "keyword=" + keywords + "&page=";
 		
 		HttpURLConnection urlConnection = null;
-		boolean pageHasMoreData = true;
 		int pageCount = 1;
+		boolean hasMorePages = true;
 		try {
-			while (pageHasMoreData) {
+			while (hasMorePages) {
 				URL url = new URL(BASE_API_URL + query + pageCount++);
 				urlConnection = (HttpURLConnection) url.openConnection();
 				
 				BufferedReader br = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
 				String page = br.readLine();
-				for (int i = 0; i < RESULTS_PER_PAGE; i++) {
-					pageHasMoreData = parsePageJson(page, i);
+				int entryCount = 0;
+				boolean pageHasMoreEntries = true;
+				while (pageHasMoreEntries) {
+					pageHasMoreEntries = parsePageJson(page, entryCount++);
 					
-					if (!pageHasMoreData) {
-						break;
+					if (!pageHasMoreEntries && entryCount == 1) {
+						hasMorePages = false;
 					}
 				}
 				
@@ -66,12 +68,29 @@ public class WordDownloader {
 		
 		JsonElement dataElement = dataArray.get(index);
 		JsonElement japaneseElement = dataElement.getAsJsonObject().get("japanese").getAsJsonArray().get(0);
-		JsonElement sensesElement = dataElement.getAsJsonObject().get("senses").getAsJsonArray().get(0);
-		JsonElement englishElement = sensesElement.getAsJsonObject().get("english_definitions").getAsJsonArray().get(0);
+		JsonArray sensesArray = dataElement.getAsJsonObject().get("senses").getAsJsonArray();
 		
 		String kanji = japaneseElement.getAsJsonObject().get("word").getAsString();
-		String kana = japaneseElement.getAsJsonObject().get("reading").getAsString();
-		String english = englishElement.getAsString();
+		JsonElement readingElement = japaneseElement.getAsJsonObject().get("reading");
+		if (readingElement == null) {
+			return false;
+		}
+		
+		String kana = readingElement.getAsString();
+			
+		ArrayList<String> english = new ArrayList<String>();
+		for (int i = 0; i < sensesArray.size(); i++) {
+			JsonArray englishArray = sensesArray.get(i).getAsJsonObject().get("english_definitions").getAsJsonArray();
+			StringBuilder englishMeaning = new StringBuilder(); 
+			for (int j = 0; j < englishArray.size(); j++) {
+				englishMeaning.append(englishArray.get(j).getAsString());
+				if (j != englishArray.size() - 1) {
+					englishMeaning.append(", ");
+				}
+			}
+			
+			english.add(englishMeaning.toString());
+		}
 		
 		wordList.add(new Word(kanji, kana, english));
 		return true;

@@ -14,7 +14,11 @@ public class BokuNoDeckoGUI {
 		System.out.println("Number of words found: " + wordList.size());
 		
 		for (Word w : wordList) {
-			System.out.println(w.getKanji() + " " + w.getKana() + " " + w.getEnglish());
+			String english = "";
+			for (String s : w.getEnglish()) {
+				english += s + ";";
+			}
+			System.out.println(w.getKanji() + " " + w.getKana() + " " + english);
 		}
 	}
 }
