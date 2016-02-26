@@ -18,7 +18,7 @@ public class BokuNoDeckoGUI {
 			for (String s : w.getEnglish()) {
 				english += s + ";";
 			}
-			System.out.println(w.getKanji() + " " + w.getKana() + " " + english);
+//			System.out.println(w.getKanji() + " " + w.getKana() + " " + english);
 		}
 	}
 }

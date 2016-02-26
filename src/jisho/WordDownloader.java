@@ -3,6 +3,7 @@ package jisho;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -29,7 +30,7 @@ public class WordDownloader {
 	
 	public void initializeWordList(String keywords) {
 		if (!getCachedWords(keywords)) {
-			downloadWords(keywords);
+			downloadWords(keywords, 1);
 		}
 	}
 
@@ -45,10 +46,17 @@ public class WordDownloader {
 			br = new BufferedReader(new InputStreamReader(new FileInputStream(cacheFile)));
 
 			String page = null;
-			int entryCount = 0;
+			int pageNbr = 1;
+			int entryNbr = 0;
 			while ((page = br.readLine()) != null) {
-				entryCount = 0;
-				while (parsePageJson(page, entryCount++));
+				pageNbr++;
+				entryNbr = 0;
+				while (parsePageJson(page, entryNbr++));
+			}
+			
+			// Download more pages in case cache ended prematurely
+			if (hasPage(keywords, pageNbr)) {
+				downloadWords(keywords, pageNbr);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -60,10 +68,35 @@ public class WordDownloader {
 			}
 		}
 		
+		
 		return true;
 	}
 
-	public void downloadWords(String keywords) {
+	public boolean hasPage(String keywords, int pageNbr) {
+		String query = "keyword=" + keywords + "&page=" + pageNbr;
+		HttpURLConnection urlConnection = null;
+		try {
+			URL url = new URL(BASE_API_URL + query);
+			urlConnection = (HttpURLConnection) url.openConnection();
+			BufferedReader br = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+			String page = br.readLine();
+			
+			return parsePageJson(page, 0);
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				urlConnection.getInputStream().close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		return false;
+	}
+
+	public void downloadWords(String keywords, int pageNbr) {
 		String query = "keyword=" + keywords + "&page=";
 		
 		File cacheFolder = new File(CACHE_FOLDER);
@@ -77,14 +110,13 @@ public class WordDownloader {
 		HttpURLConnection urlConnection = null;
 		PrintWriter cachePrinter = null;
 		
-		int pageCount = 1;
 		boolean hasMorePages = true;
 		
 		try {
-			cachePrinter = new PrintWriter(cacheFile);
+			cachePrinter = new PrintWriter(new FileOutputStream(cacheFile, true));
 
 			while (hasMorePages) {
-				URL url = new URL(BASE_API_URL + query + pageCount++);
+				URL url = new URL(BASE_API_URL + query + pageNbr++);
 				urlConnection = (HttpURLConnection) url.openConnection();
 				
 				BufferedReader br = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
