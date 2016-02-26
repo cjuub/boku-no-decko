@@ -7,6 +7,8 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
 import com.google.gson.JsonArray;
@@ -32,7 +34,9 @@ public class WordDownloader {
 			cacheFolder.mkdirs();
 		}
 		
-		File cacheFile = new File(CACHE_FOLDER, "cache.json");
+		String digest = getMD5(keywords);
+
+		File cacheFile = new File(CACHE_FOLDER, digest + ".json");
 
 		HttpURLConnection urlConnection = null;
 		PrintWriter pw = null;
@@ -74,6 +78,29 @@ public class WordDownloader {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	private String getMD5(String keywords) {
+		MessageDigest md = null;
+		try {
+			md = MessageDigest.getInstance("MD5");
+		} catch (NoSuchAlgorithmException e1) {
+			e1.printStackTrace();
+		}
+		
+		md.update(keywords.getBytes());
+		byte[] digestBytes = md.digest();
+		StringBuilder digest = new StringBuilder();
+		
+		for (byte b : digestBytes) {
+			if ((b & 0xFF) < 0x10) {
+				digest.append("0");
+			}
+			
+			digest.append(Integer.toHexString(b & 0xFF));
+		}
+		
+		return digest.toString();
 	}
 
 	private boolean parsePageJson(String page, int index) {
