@@ -1,8 +1,10 @@
 package jisho;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -13,7 +15,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 public class WordDownloader {
-	private static final String BASE_API_URL =  "http://jisho.org/api/v1/search/words?";
+	private static final String CACHE_FOLDER = "cache";
+	private static final String BASE_API_URL = "http://jisho.org/api/v1/search/words?";
 	
 	private ArrayList<Word> wordList;
 
@@ -24,16 +27,31 @@ public class WordDownloader {
 	public void downloadWords(String keywords) {
 		String query = "keyword=" + keywords + "&page=";
 		
+		File cacheFolder = new File(CACHE_FOLDER);
+		if (!cacheFolder.exists()) {
+			cacheFolder.mkdirs();
+		}
+		
+		File cacheFile = new File(CACHE_FOLDER, "cache.json");
+
 		HttpURLConnection urlConnection = null;
+		PrintWriter pw = null;
+		
 		int pageCount = 1;
 		boolean hasMorePages = true;
+		
 		try {
+			pw = new PrintWriter(cacheFile);
+
 			while (hasMorePages) {
 				URL url = new URL(BASE_API_URL + query + pageCount++);
 				urlConnection = (HttpURLConnection) url.openConnection();
 				
 				BufferedReader br = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
 				String page = br.readLine();
+				
+				pw.println(page);
+				
 				int entryCount = 0;
 				boolean pageHasMoreEntries = true;
 				while (pageHasMoreEntries) {
@@ -51,6 +69,7 @@ public class WordDownloader {
 		} finally {
 			try {
 				urlConnection.getInputStream().close();
+				pw.close();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
