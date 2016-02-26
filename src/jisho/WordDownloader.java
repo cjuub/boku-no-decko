@@ -151,13 +151,14 @@ public class WordDownloader {
 		JsonElement japaneseElement = dataElement.getAsJsonObject().get("japanese").getAsJsonArray().get(0);
 		JsonArray sensesArray = dataElement.getAsJsonObject().get("senses").getAsJsonArray();
 		
-		String kanji = japaneseElement.getAsJsonObject().get("word").getAsString();
+		JsonElement kanjiElement = japaneseElement.getAsJsonObject().get("word");
 		JsonElement readingElement = japaneseElement.getAsJsonObject().get("reading");
 		if (readingElement == null) {
 			return false;
 		}
 		
 		String kana = readingElement.getAsString();
+		String kanji = kanjiElement != null ? kanjiElement.getAsString() : kana;
 			
 		ArrayList<String> english = new ArrayList<String>();
 		for (int i = 0; i < sensesArray.size(); i++) {
