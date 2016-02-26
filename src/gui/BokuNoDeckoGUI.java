@@ -8,7 +8,7 @@ import jisho.WordDownloader;
 public class BokuNoDeckoGUI {
 	public static void main(String[] args) {
 		WordDownloader wordDownloader = new WordDownloader();
-		wordDownloader.downloadWords("曜");
+		wordDownloader.initializeWordList("水");
 		ArrayList<Word> wordList = wordDownloader.getWordList();
 		
 		System.out.println("Number of words found: " + wordList.size());

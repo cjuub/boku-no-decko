@@ -2,6 +2,7 @@ package jisho;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -25,6 +26,42 @@ public class WordDownloader {
 	public WordDownloader() {
 		wordList = new ArrayList<Word>();
 	}
+	
+	public void initializeWordList(String keywords) {
+		if (!getCachedWords(keywords)) {
+			downloadWords(keywords);
+		}
+	}
+
+	private boolean getCachedWords(String keywords) {
+		String digest = getMD5(keywords);
+		File cacheFile = new File(CACHE_FOLDER, digest + ".json");
+		if (!cacheFile.exists()) {
+			return false;
+		}
+		
+		BufferedReader br = null;
+		try {
+			br = new BufferedReader(new InputStreamReader(new FileInputStream(cacheFile)));
+
+			String page = null;
+			int entryCount = 0;
+			while ((page = br.readLine()) != null) {
+				entryCount = 0;
+				while (parsePageJson(page, entryCount++));
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				br.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		return true;
+	}
 
 	public void downloadWords(String keywords) {
 		String query = "keyword=" + keywords + "&page=";
@@ -35,17 +72,16 @@ public class WordDownloader {
 		}
 		
 		String digest = getMD5(keywords);
-
 		File cacheFile = new File(CACHE_FOLDER, digest + ".json");
 
 		HttpURLConnection urlConnection = null;
-		PrintWriter pw = null;
+		PrintWriter cachePrinter = null;
 		
 		int pageCount = 1;
 		boolean hasMorePages = true;
 		
 		try {
-			pw = new PrintWriter(cacheFile);
+			cachePrinter = new PrintWriter(cacheFile);
 
 			while (hasMorePages) {
 				URL url = new URL(BASE_API_URL + query + pageCount++);
@@ -54,7 +90,7 @@ public class WordDownloader {
 				BufferedReader br = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
 				String page = br.readLine();
 				
-				pw.println(page);
+				cachePrinter.println(page);
 				
 				int entryCount = 0;
 				boolean pageHasMoreEntries = true;
@@ -73,7 +109,7 @@ public class WordDownloader {
 		} finally {
 			try {
 				urlConnection.getInputStream().close();
-				pw.close();
+				cachePrinter.close();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -103,15 +139,15 @@ public class WordDownloader {
 		return digest.toString();
 	}
 
-	private boolean parsePageJson(String page, int index) {
+	private boolean parsePageJson(String page, int pageEntry) {
 		JsonObject jsonObject = new JsonParser().parse(page).getAsJsonObject();
 		JsonArray dataArray = jsonObject.get("data").getAsJsonArray();
 		
-		if (dataArray.size() <= index || dataArray.size() == 0) {
+		if (dataArray.size() <= pageEntry || dataArray.size() == 0) {
 			return false;
 		}
 		
-		JsonElement dataElement = dataArray.get(index);
+		JsonElement dataElement = dataArray.get(pageEntry);
 		JsonElement japaneseElement = dataElement.getAsJsonObject().get("japanese").getAsJsonArray().get(0);
 		JsonArray sensesArray = dataElement.getAsJsonObject().get("senses").getAsJsonArray();
 		
