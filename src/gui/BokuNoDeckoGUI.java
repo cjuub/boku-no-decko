@@ -2,6 +2,7 @@ package gui;
 
 import java.util.ArrayList;
 
+import anki.CSVExporter;
 import jisho.Word;
 import jisho.WordDownloader;
 
@@ -13,12 +14,7 @@ public class BokuNoDeckoGUI {
 		
 		System.out.println("Number of words found: " + wordList.size());
 		
-		for (Word w : wordList) {
-			String english = "";
-			for (String s : w.getEnglish()) {
-				english += s + ";";
-			}
-//			System.out.println(w.getKanji() + " " + w.getKana() + " " + english);
-		}
+		CSVExporter exporter = new CSVExporter(wordList);
+		exporter.export("res.csv");
 	}
 }

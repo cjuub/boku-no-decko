@@ -24,4 +24,5 @@ public class Word {
 	public  ArrayList<String> getEnglish() {
 		return english;
 	}
+
 }
