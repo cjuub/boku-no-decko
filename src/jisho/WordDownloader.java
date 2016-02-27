@@ -170,7 +170,7 @@ public class WordDownloader {
 		
 		return digest.toString();
 	}
-
+	
 	private boolean parsePageJson(String page, int pageEntry) {
 		JsonObject jsonObject = new JsonParser().parse(page).getAsJsonObject();
 		JsonArray dataArray = jsonObject.get("data").getAsJsonArray();
@@ -193,8 +193,26 @@ public class WordDownloader {
 		String kanji = kanjiElement != null ? kanjiElement.getAsString() : kana;
 			
 		ArrayList<String> english = new ArrayList<String>();
+		ArrayList<String> pos = new ArrayList<String>();
 		for (int i = 0; i < sensesArray.size(); i++) {
 			JsonArray englishArray = sensesArray.get(i).getAsJsonObject().get("english_definitions").getAsJsonArray();
+			JsonArray posArray = sensesArray.get(i).getAsJsonObject().get("parts_of_speech").getAsJsonArray();
+			
+			StringBuilder posBuilder = new StringBuilder();
+			for (int j = 0; j < posArray.size(); j++) {
+				if (!posArray.get(j).isJsonNull()) {
+					posBuilder.append(posArray.get(j).getAsString());
+				}
+			}
+			
+			if (posArray.size() == 0 && pos.size() == 0) {
+				pos.add("None");
+			} else if (posArray.size() == 0) {
+				pos.add(pos.get(pos.size() - 1));
+			} else {
+				pos.add(posBuilder.toString());
+			}
+			
 			StringBuilder englishMeaning = new StringBuilder(); 
 			for (int j = 0; j < englishArray.size(); j++) {
 				englishMeaning.append(englishArray.get(j).getAsString());
@@ -206,7 +224,7 @@ public class WordDownloader {
 			english.add(englishMeaning.toString());
 		}
 		
-		wordList.add(new Word(kanji, kana, english));
+		wordList.add(new Word(kanji, kana, english, pos));
 		return true;
 	}
 

@@ -6,11 +6,13 @@ public class Word {
 	private String kanji;
 	private String kana;
 	private ArrayList<String> english;
+	private ArrayList<String> partsOfSpeech;
 
-	public Word(String kanji, String kana,  ArrayList<String> english) {
+	public Word(String kanji, String kana,  ArrayList<String> english, ArrayList<String> partsOfSpeech) {
 		this.kanji = kanji;
 		this.kana = kana;
 		this.english = english;
+		this.partsOfSpeech = partsOfSpeech;
 	}
 
 	public String getKanji() {
@@ -21,8 +23,11 @@ public class Word {
 		return kana;
 	}
 
-	public  ArrayList<String> getEnglish() {
+	public ArrayList<String> getEnglish() {
 		return english;
 	}
 
+	public ArrayList<String> getPartsOfSpeech() {
+		return partsOfSpeech;
+	}
 }
