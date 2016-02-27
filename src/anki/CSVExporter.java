@@ -10,18 +10,15 @@ import java.util.Set;
 import jisho.Word;
 
 public class CSVExporter {
-	private ArrayList<Word> wordList;
 	private Set<String> ignoredPos;
 	
-	public CSVExporter(ArrayList<Word> wordList) {
-		this.wordList = wordList;
-		
+	public CSVExporter() {
 		ignoredPos = new HashSet<>();
 		ignoredPos.add("Wikipedia definition");
 		ignoredPos.add("Place");
 	}
 	
-	public void export(String filename) {
+	public void export(ArrayList<Word> wordList, String filename) {
 		PrintWriter csvPrinter = null;
 		int cnt = 1;
 		try {

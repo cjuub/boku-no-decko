@@ -1,20 +1,26 @@
 package gui;
 
-import java.util.ArrayList;
+import java.awt.BorderLayout;
 
-import anki.CSVExporter;
-import jisho.Word;
+import javax.swing.JFrame;
+
 import jisho.WordDownloader;
 
-public class BokuNoDeckoGUI {
+@SuppressWarnings("serial")
+public class BokuNoDeckoGUI extends JFrame {
+	
+	public BokuNoDeckoGUI(WordDownloader wordDownloader) {
+		ButtonPanel buttonPanel = new ButtonPanel(wordDownloader);
+		
+		add(buttonPanel, BorderLayout.SOUTH);
+		
+		pack();
+		setVisible(true);
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
+	}
+	
 	public static void main(String[] args) {
 		WordDownloader wordDownloader = new WordDownloader();
-		wordDownloader.initializeWordList("%23common");
-		ArrayList<Word> wordList = wordDownloader.getWordList();
-		
-		System.out.println("Number of words found: " + wordList.size());
-		
-		CSVExporter exporter = new CSVExporter(wordList);
-		exporter.export("res.csv");
+		new BokuNoDeckoGUI(wordDownloader);
 	}
 }
