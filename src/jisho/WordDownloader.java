@@ -29,6 +29,8 @@ public class WordDownloader {
 	}
 	
 	public void initializeWordList(String keywords) {
+		keywords = keywords.replace("#", "%23");
+		
 		if (!getCachedWords(keywords)) {
 			downloadWords(keywords, 1);
 		}
@@ -82,7 +84,6 @@ public class WordDownloader {
 			String page = br.readLine();
 			
 			return parsePageJson(page, 0);
-			
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {

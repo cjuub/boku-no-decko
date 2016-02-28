@@ -32,6 +32,7 @@ public class CSVExporter {
 						nbrIgnored++;
 						continue;
 					}
+					
 					english.append(i + 1 - nbrIgnored + ". " + w.getEnglish().get(i) + "</br>");
 				}
 				
